@@ -1,6 +1,8 @@
 import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:escooter_notes_app/data/security.dart';
+import 'package:escooter_notes_app/managers/caching/cashing_key.dart';
+
 import '../utils/config/config.dart';
 
 class AppwriteService {
@@ -8,8 +10,6 @@ class AppwriteService {
   late Account account;
   late Databases databases;
   late Storage storage;
-
-  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
   AppwriteService() {
     client = Client()
@@ -31,14 +31,15 @@ class AppwriteService {
   }
 
   // Store session token securely
-  Future<void> storeSession(String jwt) async {
-    await _secureStorage.write(key: 'appwrite_jwt', value: jwt);
-    client.setJWT(jwt);
+  Future<void> storeSession(Jwt token) async {
+    await SecureStorage()
+        .writeSecureData(CachingKey.ACCESS_TOKEN.value, token.jwt);
+    client.setJWT(token.jwt);
   }
 
   // Clear session on logout
   Future<void> clearSession() async {
-    await _secureStorage.delete(key: 'appwrite_jwt');
+    await SecureStorage().deleteSecureData(CachingKey.ACCESS_TOKEN.value);
     client.setJWT(null);
   }
 }

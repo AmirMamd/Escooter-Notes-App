@@ -1,9 +1,10 @@
 import 'package:escooter_notes_app/utils/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:iconsax/iconsax.dart';
 
-import '../../../utils/helpers/helpers.dart';
 import '../../../utils/constants/sizes.dart';
+import '../../../utils/helpers/helpers.dart';
 
 class ETextFormField extends StatelessWidget {
   final TextEditingController controller;
@@ -11,7 +12,8 @@ class ETextFormField extends StatelessWidget {
   final String? hintText;
   final Icon? prefixIcon;
   final IconButton? suffixIcon;
-  final bool isPasswordField;
+  final VoidCallback? onToggleObscureText;
+  final bool? obscureText;
   final TextInputType keyboardType;
   final String? Function(String?)? validator;
   final void Function(String)? onChanged;
@@ -28,7 +30,8 @@ class ETextFormField extends StatelessWidget {
     this.hintText,
     this.prefixIcon,
     this.suffixIcon,
-    this.isPasswordField = false,
+    this.obscureText,
+    this.onToggleObscureText,
     this.keyboardType = TextInputType.text,
     this.validator,
     this.onChanged,
@@ -44,38 +47,52 @@ class ETextFormField extends StatelessWidget {
     final isTablet = Helpers.isTablet(context);
     final size = isTablet ? 0.5.sp : 1;
     return TextFormField(
-      style: TextStyle(
-        color: AppColors.white,
-        fontSize: Sizes.md,
-      ),
+      style:
+          TextStyle(color: AppColors.white, fontSize: Sizes.md, fontFamily: ''),
       controller: controller,
       keyboardType: keyboardType,
-      obscureText: isPasswordField,
+      obscureText: obscureText ?? false,
       maxLength: maxLength,
       maxLines: maxLines,
       autofocus: autofocus,
       textInputAction: textInputAction,
       cursorColor: AppColors.white,
       decoration: InputDecoration(
+        suffixIcon: onToggleObscureText != null
+            ? Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8.0.w),
+                child: Transform.scale(
+                  scale: size.toDouble() * 0.65,
+                  child: IconButton(
+                    icon: Icon(
+                      obscureText! ? Iconsax.eye_slash : Iconsax.eye,
+                      color: AppColors.grey,
+                    ),
+                    onPressed: onToggleObscureText,
+                  ),
+                ),
+              )
+            : suffixIcon != null
+                ? Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8.0.w),
+                    child: Transform.scale(
+                      scale: size.toDouble() * 0.65,
+                      child: suffixIcon,
+                    ),
+                  )
+                : null,
         labelText: labelText,
         hintText: hintText,
         prefixIcon: Padding(
           padding: EdgeInsets.symmetric(horizontal: 8.0.w),
           child: Transform.scale(scale: size.toDouble(), child: prefixIcon),
         ),
-        suffixIcon: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 8.0.w),
-          child:
-              Transform.scale(scale: size.toDouble() * 0.65, child: suffixIcon),
-        ),
         labelStyle: TextStyle(
           color: AppColors.white,
           fontSize: Sizes.md,
         ),
-        floatingLabelStyle: TextStyle(
-          color: AppColors.grey,
-          fontSize: Sizes.md
-        ),
+        floatingLabelStyle:
+            TextStyle(color: AppColors.white, fontSize: Sizes.md),
         contentPadding:
             EdgeInsets.symmetric(vertical: 15.0.h, horizontal: 10.w),
         errorStyle: TextStyle(
@@ -88,7 +105,8 @@ class ETextFormField extends StatelessWidget {
             width: 1,
           ),
         ),
-        enabledBorder: OutlineInputBorder( // Add this for unfocused state
+        enabledBorder: OutlineInputBorder(
+          // Add this for unfocused state
           borderRadius: BorderRadius.circular(8.r),
           borderSide: const BorderSide(
             color: AppColors.white, // White border when unfocused

@@ -46,7 +46,7 @@ class EButton extends StatelessWidget {
             isStroke ? AppColors.white : Colors.white, // Text color
           ),
           overlayColor: WidgetStateProperty.all<Color>(
-            AppColors.primary.withOpacity(0.1), // Ripple effect color
+            AppColors.primary.withValues(alpha: 0.1), // Ripple effect color
           ),
           elevation: WidgetStateProperty.all<double>(0), // Remove shadow
         ),

@@ -54,7 +54,8 @@ class Sizes{
 
   //Input Field
   static final double inputFieldRadius = 12.0.r;
-  static final double spaceBetweenInputFields = 16.0.sp;
+  static final double spaceBetweenInputFields = 24.0.sp;
+  static final double spaceBetweenButtons = 16.0.h;
 
   // Card Sizes
   static final double cardRadiusLg = 16.0.r;
@@ -71,6 +72,9 @@ class Sizes{
 
   //Grid View Spacing
   static final double gridViewSpacing = 16.0.sp;
+
+  //Title Screens
+  static final double titleScreens = 40.0.sp;
  
 }
 

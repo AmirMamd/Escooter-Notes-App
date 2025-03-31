@@ -1,38 +1,98 @@
 import 'package:escooter_notes_app/screens/authentication/login.dart';
+import 'package:escooter_notes_app/screens/authentication/sign_up.dart';
+import 'package:escooter_notes_app/screens/authentication/verification.dart';
+import 'package:escooter_notes_app/screens/common/e_splash_screen.dart';
+import 'package:escooter_notes_app/screens/notes/note_details.dart';
+import 'package:escooter_notes_app/screens/notes/notes.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
 import 'named_navigator.dart';
+
+final goRouter = GoRouter(
+  navigatorKey: NamedNavigatorImpl.navigatorState,
+  initialLocation: Routes.SPLASH_SCREEN,
+  routes: [
+    GoRoute(
+      path: Routes.SPLASH_SCREEN,
+      pageBuilder: (context, state) => MaterialPage(
+        key: state.pageKey,
+        child: const ESplashScreen(),
+      ),
+    ),
+    GoRoute(
+      path: Routes.LOGIN_SCREEN,
+      pageBuilder: (context, state) => MaterialPage(
+        key: state.pageKey,
+        child: const Login(),
+      ),
+    ),
+    GoRoute(
+      path: Routes.SIGN_UP_SCREEN,
+      pageBuilder: (context, state) => MaterialPage(
+        key: state.pageKey,
+        child: const SignUp(),
+      ),
+    ),
+    GoRoute(
+      path: Routes.VERIFICATION_SCREEN,
+      pageBuilder: (context, state) => MaterialPage(
+        key: state.pageKey,
+        child: const VerificationScreen(),
+      ),
+    ),
+    GoRoute(
+      path: Routes.NOTES_SCREEN,
+      pageBuilder: (context, state) => MaterialPage(
+        key: state.pageKey,
+        child: const Notes(),
+      ),
+    ),
+    GoRoute(
+      path: Routes.NOTE_DETAILS,
+      pageBuilder: (context, state) {
+        final noteId = state.pathParameters['noteId'];
+        return MaterialPage(
+          key: state.pageKey,
+          child: NoteDetails(noteId: noteId),
+        );
+      },
+    ),
+  ],
+);
+
+abstract class NamedNavigator {
+  void pop({dynamic result});
+
+  Future<dynamic> push(String routeName,
+      {dynamic arguments, bool clean = false});
+}
 
 class NamedNavigatorImpl implements NamedNavigator {
   static final GlobalKey<NavigatorState> navigatorState =
       GlobalKey<NavigatorState>();
 
-  static Route<dynamic> onGenerateRoute(RouteSettings settings) {
-    switch (settings.name) {
-      case Routes.LOGIN_SCREEN:
-        return MaterialPageRoute(
-          settings: settings,
-          builder: (_) => const Login(),
-        );
-
-    }
-    return MaterialPageRoute(settings: settings, builder: (_) => Container());
-  }
-
   @override
   void pop({dynamic result}) {
-    if (navigatorState.currentState!.canPop()) {
-      navigatorState.currentState!.pop(result);
+    final context = navigatorState.currentContext;
+    if (context != null) {
+      context.pop(result);
     }
   }
 
   @override
-  Future push(String routeName, {arguments, bool clean = false}) {
+  Future<dynamic> push(String routeName,
+      {dynamic arguments, bool clean = false}) {
+    final context = navigatorState.currentContext;
+    if (context == null) return Future.value(null);
+
     if (clean) {
-      return navigatorState.currentState!.pushNamedAndRemoveUntil(
-          routeName, (_) => false,
-          arguments: arguments);
+      // Use GoRouter's go() for clean navigation
+      context.go(routeName, extra: arguments);
+      return Future.value(null); // go() returns void
     }
-    return navigatorState.currentState!
-        .pushNamed(routeName, arguments: arguments);
+
+    // Use push() for normal navigation
+    return context.push(routeName, extra: arguments);
   }
 }

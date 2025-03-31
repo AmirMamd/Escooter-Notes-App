@@ -1,10 +1,14 @@
+import 'package:escooter_notes_app/repositories/authentication_repository.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
+
 import '../../managers/navigator/named_navigator.dart';
 import '../../managers/navigator/named_navigator_implementation.dart';
 import '../../utils/constants/image_strings.dart';
 import '../../utils/constants/text_strings.dart';
 import '../../utils/theme/colors.dart';
+
 class ESplashScreen extends StatefulWidget {
   const ESplashScreen({super.key});
 
@@ -12,14 +16,21 @@ class ESplashScreen extends StatefulWidget {
   _ESplashScreenState createState() => _ESplashScreenState();
 }
 
-class _ESplashScreenState extends State<ESplashScreen> with SingleTickerProviderStateMixin {
+class _ESplashScreenState extends State<ESplashScreen>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeTextAnimation;
 
   @override
   void initState() {
     super.initState();
+    _setupAnimations();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _handleNavigation(); // Safe to use context here
+    });
+  }
 
+  void _setupAnimations() {
     _controller = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
@@ -29,15 +40,22 @@ class _ESplashScreenState extends State<ESplashScreen> with SingleTickerProvider
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
 
-    // Transition after 3 seconds
-    Future.delayed(const Duration(seconds: 3), () {
-      NamedNavigatorImpl().push(Routes.LOGIN_SCREEN, clean: true);
-    });
-
     Future.delayed(const Duration(milliseconds: 3), () {
       setState(() {
         _controller.repeat(reverse: true);
       });
+    });
+  }
+
+  Future<void> _handleNavigation() async {
+    Future.delayed(const Duration(seconds: 3), () async {
+      bool isLoggedIn =
+          await context.read<AuthenticationRepository>().isLoggedIn();
+      if (isLoggedIn) {
+        NamedNavigatorImpl().push(Routes.NOTES_SCREEN, clean: true);
+      } else {
+        NamedNavigatorImpl().push(Routes.LOGIN_SCREEN, clean: true);
+      }
     });
   }
 

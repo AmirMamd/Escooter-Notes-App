@@ -3,26 +3,28 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:math' hide log;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 import 'package:url_launcher/url_launcher_string.dart';
 
-class Helpers{
-  static TextDirection getTextDirection(BuildContext context){
-  Locale currentLocale = Localizations.localeOf(context);
-  TextDirection textDirection = currentLocale.languageCode == 'ar' || currentLocale.languageCode == 'he'
-      ? TextDirection.rtl
-      : TextDirection.ltr;
-  return textDirection;
+class Helpers {
+  static TextDirection getTextDirection(BuildContext context) {
+    Locale currentLocale = Localizations.localeOf(context);
+    TextDirection textDirection =
+        currentLocale.languageCode == 'ar' || currentLocale.languageCode == 'he'
+            ? TextDirection.rtl
+            : TextDirection.ltr;
+    return textDirection;
   }
 
   static bool isKeyboardOpen(BuildContext context) {
     return MediaQuery.of(context).viewInsets.bottom > 0;
   }
 
-  static String getMonth(String dateTime){
+  static String getMonth(String dateTime) {
     DateTime date = DateFormat("EEEE, MMMM dd").parse(dateTime);
     return DateFormat.MMMM().format(date);
   }
@@ -40,27 +42,26 @@ class Helpers{
     return daysOfWeek[day];
   }
 
-
   static String decodeNdefPayload(String hexPayload) {
     final bytes = Uint8List.fromList(
       List<int>.generate(
         hexPayload.length ~/ 2,
-            (i) => int.parse(hexPayload.substring(i * 2, i * 2 + 2), radix: 16),
+        (i) => int.parse(hexPayload.substring(i * 2, i * 2 + 2), radix: 16),
       ),
     );
 
     return utf8.decode(bytes);
   }
 
-  static bool isDarkMode(BuildContext context){
+  static bool isDarkMode(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark;
   }
 
-  static double screenHeight(BuildContext context){
+  static double screenHeight(BuildContext context) {
     return (MediaQuery.of(context).size.height);
   }
 
-  static double screenWidth(BuildContext context){
+  static double screenWidth(BuildContext context) {
     return (MediaQuery.of(context).size.width);
   }
 
@@ -117,6 +118,7 @@ class Helpers{
       return "Invalid date";
     }
   }
+
   static List<T> filterList<T>({
     required List<T> items,
     required String query,
@@ -133,7 +135,8 @@ class Helpers{
     return Platform.isIOS;
   }
 
-  static String getTimeDifference(BuildContext context, String timeFrom, String timeTo) {
+  static String getTimeDifference(
+      BuildContext context, String timeFrom, String timeTo) {
     final fromTime = TimeOfDay(
       hour: int.parse(timeFrom.split(':')[0]),
       minute: int.parse(timeFrom.split(':')[1]),
@@ -163,24 +166,23 @@ class Helpers{
     }
   }
 
-  static void hideKeyboard(BuildContext context){
+  static void hideKeyboard(BuildContext context) {
     FocusScope.of(context).requestFocus(FocusNode());
   }
 
-  static Future<void> setStatusBarColor(Color color) async{
+  static Future<void> setStatusBarColor(Color color) async {
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(statusBarColor: color),
     );
   }
 
-  static bool isLandscapeOrientation(BuildContext context){
+  static bool isLandscapeOrientation(BuildContext context) {
     // final viewInsets = View.of(context).viewInsets;
     // return viewInsets.bottom == 0;
     return MediaQuery.of(context).orientation == Orientation.landscape;
-
   }
 
-  static void setOrientationToPortrait(){
+  static void setOrientationToPortrait() {
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
@@ -195,7 +197,7 @@ class Helpers{
     return diagonal >= 7.0;
   }
 
-  static void setOrientationToPortraitOrLandscape(){
+  static void setOrientationToPortraitOrLandscape() {
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
@@ -204,69 +206,73 @@ class Helpers{
     ]);
   }
 
-  static bool isPortraitOrientation(BuildContext context){
+  static bool isPortraitOrientation(BuildContext context) {
     // final viewInsets = View.of(context).viewInsets;
     // return viewInsets.bottom != 0;
     return MediaQuery.of(context).orientation == Orientation.portrait;
   }
 
-  static void setFullScreen(bool enable){
-    SystemChrome.setEnabledSystemUIMode(enable? SystemUiMode.immersiveSticky : SystemUiMode.edgeToEdge);
+  static void setFullScreen(bool enable) {
+    SystemChrome.setEnabledSystemUIMode(
+        enable ? SystemUiMode.immersiveSticky : SystemUiMode.edgeToEdge);
   }
 
-  static double getScreenHeight(BuildContext context){
+  static double getScreenHeight(BuildContext context) {
     return MediaQuery.of(context).size.height;
   }
 
-  static double getScreenWidth(BuildContext context){
+  static double getScreenWidth(BuildContext context) {
     return MediaQuery.of(context).size.width;
   }
 
-  static double getBottomNavigationBarHeight(){
+  static double getBottomNavigationBarHeight() {
     return kBottomNavigationBarHeight;
   }
 
-  static double getAppBarHeight(){
+  static double getAppBarHeight() {
     return kToolbarHeight;
   }
 
-  static Future<bool> isPhysicalDevice() async{
-    return defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS;
+  static Future<bool> isPhysicalDevice() async {
+    return defaultTargetPlatform == TargetPlatform.android ||
+        defaultTargetPlatform == TargetPlatform.iOS;
   }
 
-  static void vibrate(Duration duration){
+  static void vibrate(Duration duration) {
     HapticFeedback.vibrate();
-    Future.delayed(duration,() => HapticFeedback.vibrate());
+    Future.delayed(duration, () => HapticFeedback.vibrate());
   }
 
-  static Future<void> setPreferredOrientations(List<DeviceOrientation> orientations) async{
+  static Future<void> setPreferredOrientations(
+      List<DeviceOrientation> orientations) async {
     await SystemChrome.setPreferredOrientations(orientations);
   }
 
-  static void hideStatusBar(){
+  static void hideStatusBar() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
   }
 
-  static Future<bool> hasInternetConnection() async{
-    try{
+  static Future<bool> hasInternetConnection() async {
+    try {
       final result = await InternetAddress.lookup('example.com');
       return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
-    } on SocketException catch(_){
+    } on SocketException catch (_) {
       return false;
     }
   }
 
-  static bool isAndroid(){
+  static bool isAndroid() {
     return defaultTargetPlatform == TargetPlatform.android;
   }
 
-  static void launchUrl(String url) async{
+  static void launchUrl(String url) async {
     await launchUrlString(url);
   }
 }
 
 extension SizeExtension on Size {
-  double get diagonalInches => (sqrt((width * width) + (height * height)) / 160);
+  double get diagonalInches =>
+      (sqrt((width * width) + (height * height)) / 160);
 }
 
 abstract class Enum<T> {
