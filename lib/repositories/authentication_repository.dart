@@ -17,15 +17,9 @@ class AuthenticationRepository {
 
   Future<void> login(String email, String password) async {
     try {
-      final session =
-          await _appwriteService.account.getSession(sessionId: 'current');
-
-      if (session.provider == 'email') {
-        // Session already exists, optionally re-fetch user
-        final user = await _appwriteService.account.get();
-        final token = await _appwriteService.account.createJWT();
-        await _appwriteService.storeSession(token);
-        return;
+      final loggedIn = await isLoggedIn();
+      if (loggedIn) {
+        NamedNavigatorImpl().push(Routes.NOTES_SCREEN);
       }
     } catch (_) {
       throw Exception("No Valid Session");
@@ -117,6 +111,16 @@ class AuthenticationRepository {
       if (userDocs.documents.isEmpty) return false;
 
       final userDoc = userDocs.documents.first;
+
+      await SecureStorage().writeSecureData(
+          CachingKey.FIRST_NAME.value, user.name.split(' ').first);
+      await SecureStorage().writeSecureData(
+          CachingKey.LAST_NAME.value, user.name.split(' ').last);
+      await SecureStorage().writeSecureData(CachingKey.EMAIL.value, user.email);
+      await SecureStorage()
+          .writeSecureData(CachingKey.PHONE_NUMBER.value, user.phone);
+      await SecureStorage().writeSecureData(CachingKey.USER_ID.value, user.$id);
+      NamedNavigatorImpl().push(Routes.NOTES_SCREEN, clean: true);
 
       // 5. Check the 'status' field (or 'enabled' field if named that)
       final isEnabled = userDoc.data['status'] == true;

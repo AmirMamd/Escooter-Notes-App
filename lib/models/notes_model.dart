@@ -14,11 +14,11 @@ class Note {
   });
 
   Map<String, dynamic> toJson() {
-    return {
-      'title': title,
-      'body': body,
-      'user_id': userId
-    };
+    return {'id': id, 'title': title, 'body': body, 'user_id': userId};
+  }
+
+  Map<String, dynamic> toJsonWithoutId() {
+    return {'title': title, 'body': body, 'user_id': userId};
   }
 
   factory Note.fromJson(Map<String, dynamic> json) {
@@ -31,12 +31,13 @@ class Note {
   }
 
   factory Note.createNew({
+    required String id,
     required String title,
     required String body,
     required String userId,
   }) {
     return Note(
-      id: '',
+      id: id,
       title: title,
       body: body,
       userId: userId,
@@ -48,8 +49,6 @@ class Note {
     String? title,
     String? body,
     String? userId,
-    DateTime? createdAt,
-    DateTime? updatedAt,
   }) {
     return Note(
       id: id ?? this.id,

@@ -19,38 +19,26 @@ class NoteDetails extends StatefulWidget {
 
 class _NoteDetailsState extends State<NoteDetails> {
   final TextEditingController _controller = TextEditingController();
-
   bool _hasSaved = false;
 
-  Future<void> _handleBackNavigation(BuildContext context) async {
-    if (_hasSaved) return; // prevent double execution
-    _hasSaved = true;
+  @override
+  void initState() {
+    super.initState();
+    _loadNoteIfNeeded();
+  }
 
-    final fullText = _controller.text.trim();
-    if (fullText.isEmpty) return;
+  Future<void> _loadNoteIfNeeded() async {
+    final noteId = widget.noteId;
 
-    final lines = fullText.split('\n');
-    final title = lines.isNotEmpty ? lines.first.trim() : '';
-    final body = lines.length > 1 ? lines.sublist(1).join('\n').trim() : '';
-
-    final userId =
-        await SecureStorage().readSecureData(CachingKey.USER_ID.value);
-
-    final note = Note.createNew(
-      title: title,
-      body: body,
-      userId: userId,
-    );
-
-    debugPrint('📝 Note saved: $note');
-
-    if (context.mounted) {
+    if (noteId != null && noteId != "new") {
       final provider = context.read<NotesProvider>();
-      provider.addNote(note);
-      await provider.syncNotesWithDatabase();
+      final note = await provider.getNoteById(noteId);
+      if (note != null) {
+        setState(() {
+          _controller.text = "${note.title}\n${note.body}";
+        });
+      }
     }
-
-    if (context.mounted) Navigator.of(context).pop(note);
   }
 
   @override
@@ -59,6 +47,8 @@ class _NoteDetailsState extends State<NoteDetails> {
       onPopInvokedWithResult: (didPop, result) async {
         if (!_hasSaved) {
           await _handleBackNavigation(context);
+        } else {
+          Navigator.pop(context);
         }
       },
       child: Theme(
@@ -116,5 +106,34 @@ class _NoteDetailsState extends State<NoteDetails> {
         ),
       ),
     );
+  }
+
+  Future<void> _handleBackNavigation(BuildContext context) async {
+    if (_hasSaved) return;
+    _hasSaved = true;
+
+    final fullText = _controller.text.trim();
+    if (fullText.isEmpty) return;
+
+    final lines = fullText.split('\n');
+    final title = lines.isNotEmpty ? lines.first.trim() : '';
+    final body = lines.length > 1 ? lines.sublist(1).join('\n').trim() : '';
+
+    final userId =
+        await SecureStorage().readSecureData(CachingKey.USER_ID.value);
+
+    final note = Note.createNew(
+      id: widget.noteId ?? '',
+      title: title,
+      body: body,
+      userId: userId,
+    );
+
+    debugPrint('📝 Note saved: $note');
+
+    if (context.mounted) {
+      final provider = context.read<NotesProvider>();
+      provider.addNote(note);
+    }
   }
 }

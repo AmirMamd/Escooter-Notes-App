@@ -71,29 +71,41 @@ class _NotesState extends State<Notes> {
                     onDismissed: (_) {
                       context.read<NotesProvider>().removeNote(note.id);
                     },
-                    child: ListTile(
-                      title: Text(
-                        note.title,
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.copyWith(color: Colors.white),
+                    child: Padding(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
+                      child: Material(
+                        color: Colors.grey[850],
+                        borderRadius: BorderRadius.circular(8.r),
+                        elevation: 2,
+                        child: ListTile(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.r),
+                          ),
+                          title: Text(
+                            note.title,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(color: Colors.white),
+                          ),
+                          subtitle: Text(
+                            note.body,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(color: Colors.white70),
+                          ),
+                          onTap: () {
+                            NamedNavigatorImpl().push(
+                              Routes.NOTE_DETAILS
+                                  .replaceFirst(':noteId', note.id),
+                            );
+                          },
+                        ),
                       ),
-                      tileColor: Colors.grey[800],
-                      subtitle: Text(
-                        note.body,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(color: Colors.white70),
-                      ),
-                      onTap: () {
-                        NamedNavigatorImpl().push(
-                          Routes.NOTE_DETAILS.replaceFirst(':noteId', note.id),
-                        );
-                      },
                     ),
                   );
                 },

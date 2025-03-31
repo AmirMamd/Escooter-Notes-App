@@ -1,3 +1,4 @@
+import 'package:appwrite/models.dart';
 import 'package:escooter_notes_app/services/app_write_service.dart';
 
 import '../models/notes_model.dart';
@@ -8,7 +9,6 @@ class NotesRepository {
 
   NotesRepository(this._appwriteService);
 
-  /// Fetch notes from Appwrite Database
   Future<List<Note>> getNotesFromDatabase() async {
     try {
       final documents = await _appwriteService.databases.listDocuments(
@@ -16,7 +16,13 @@ class NotesRepository {
         collectionId: AppwriteConfig.notesCollectionId,
       );
 
-      return documents.documents.map((doc) => Note.fromJson(doc.data)).toList();
+      return documents.documents.map((doc) {
+        final dataWithId = {
+          ...doc.data,
+          'id': doc.$id, // manually add the ID
+        };
+        return Note.fromJson(dataWithId);
+      }).toList();
     } catch (e) {
       print('Error fetching notes from DB: $e');
       return [];
@@ -24,16 +30,16 @@ class NotesRepository {
   }
 
   /// Create a new note
-  Future<void> createNote(Note note) async {
+  Future<Document?> createNote(Note note) async {
     try {
-      await _appwriteService.databases.createDocument(
+      return await _appwriteService.databases.createDocument(
         databaseId: AppwriteConfig.databaseId,
         collectionId: AppwriteConfig.notesCollectionId,
-        documentId: note.id.isEmpty ? 'unique()' : note.id,
-        data: note.toJson(),
+        documentId: note.id.isEmpty || note.id == 'new' ? 'unique()' : note.id,
+        data: note.toJsonWithoutId(),
       );
     } catch (e) {
-      print('Error creating note: $e');
+      return null;
     }
   }
 
@@ -44,7 +50,7 @@ class NotesRepository {
         databaseId: AppwriteConfig.databaseId,
         collectionId: AppwriteConfig.notesCollectionId,
         documentId: note.id,
-        data: note.toJson(),
+        data: note.toJsonWithoutId(),
       );
     } catch (e) {
       print('Error updating note: $e');
@@ -61,6 +67,19 @@ class NotesRepository {
       );
     } catch (e) {
       print('Error deleting note: $e');
+    }
+  }
+
+  Future<Document?> getNoteById(String id) async {
+    try {
+      return await _appwriteService.databases.getDocument(
+        databaseId: AppwriteConfig.databaseId,
+        collectionId: AppwriteConfig.notesCollectionId,
+        documentId: id,
+      );
+    } catch (e) {
+      print("Failed to get note: $e");
+      return null;
     }
   }
 }

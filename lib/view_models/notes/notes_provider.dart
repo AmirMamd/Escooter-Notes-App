@@ -41,18 +41,18 @@ class NotesProvider extends ChangeNotifier {
     isLoading = true;
 
     try {
-      final storedNotesJson = await SecureStorage()
-          .readSecureData(CachingKey.NOTES.value + CachingKey.USER_ID.value);
-
-      if (storedNotesJson != "No Data Found" && storedNotesJson.isNotEmpty) {
-        final List<dynamic> decoded = Note.decodeNotesJson(storedNotesJson);
-        _notes = decoded.map((e) => Note.fromJson(e)).toList();
-      }
-
       if (await _hasInternet()) {
         final dbNotes = await _notesRepository.getNotesFromDatabase();
         _notes = dbNotes;
         await _saveNotesToStorage();
+      } else {
+        final storedNotesJson = await SecureStorage()
+            .readSecureData(CachingKey.NOTES.value + CachingKey.USER_ID.value);
+
+        if (storedNotesJson != "No Data Found" && storedNotesJson.isNotEmpty) {
+          final List<dynamic> decoded = Note.decodeNotesJson(storedNotesJson);
+          _notes = decoded.map((e) => Note.fromJson(e)).toList();
+        }
       }
     } catch (e) {
       debugPrint('Error loading notes: $e');
@@ -61,14 +61,57 @@ class NotesProvider extends ChangeNotifier {
     isLoading = false;
   }
 
-  Future<void> addNote(Note note) async {
-    _notes.insert(0, note);
-    await _saveNotesToStorage();
-    notifyListeners();
+  Future<Note?> getNoteById(String id) async {
+    // 1. Try from cache
+    final cached = _notes.firstWhere(
+      (n) => n.id == id,
+      orElse: () => Note.createNew(id: '', title: '', body: '', userId: ''),
+    );
+
+    if (cached.id.isNotEmpty) return cached;
 
     if (await _hasInternet()) {
-      await _notesRepository.createNote(note);
+      try {
+        final doc = await _notesRepository.getNoteById(id);
+        if (doc != null) {
+          return Note.fromJson(doc.data);
+        }
+      } catch (e) {
+        debugPrint("Error fetching note from API: $e");
+      }
     }
+
+    // 2. Try from secure storage
+    final storedNotesJson =
+        await SecureStorage().readSecureData(CachingKey.NOTES.value);
+    if (storedNotesJson != "No Data Found") {
+      final List<dynamic> decoded = Note.decodeNotesJson(storedNotesJson);
+      final localMatch = decoded.map((e) => Note.fromJson(e)).firstWhere(
+          (n) => n.id == id,
+          orElse: () =>
+              Note.createNew(id: '', title: '', body: '', userId: ''));
+
+      if (localMatch.id.isNotEmpty) return localMatch;
+    }
+
+    return null;
+  }
+
+  Future<void> addNote(Note note) async {
+    Note noteToSave = note;
+    if (note.id != '' && note.id != 'new') {
+      return updateNote(note);
+    }
+    if (await _hasInternet()) {
+      final savedNote = await _notesRepository.createNote(note);
+      if (savedNote != null) {
+        noteToSave = note.copyWith(id: savedNote.$id);
+      }
+    }
+
+    _notes.insert(0, noteToSave);
+    await _saveNotesToStorage();
+    notifyListeners();
   }
 
   Future<void> removeNote(String id) async {
@@ -91,29 +134,6 @@ class NotesProvider extends ChangeNotifier {
       if (await _hasInternet()) {
         await _notesRepository.updateNote(updated);
       }
-    }
-  }
-
-  Future<void> syncNotesWithDatabase() async {
-    try {
-      final hasInternet = await _hasInternet();
-
-      final encodedNotes = jsonEncode(_notes.map((e) => e.toJson()).toList());
-      await SecureStorage().writeSecureData(
-          CachingKey.NOTES.value + CachingKey.USER_ID.value, encodedNotes);
-
-      if (!hasInternet) {
-        debugPrint("📴 No internet, saved notes only to secure storage.");
-        return;
-      }
-
-      for (final note in _notes) {
-        await _notesRepository.createNote(note);
-      }
-
-      debugPrint("✅ Notes synced with backend.");
-    } catch (e) {
-      debugPrint("⚠️ Failed to sync notes: $e");
     }
   }
 }
