@@ -70,6 +70,26 @@ class NotesRepository {
     }
   }
 
+  Future<void> deleteAll() async {
+    try {
+      final documents = await _appwriteService.databases.listDocuments(
+        databaseId: AppwriteConfig.databaseId,
+        collectionId: AppwriteConfig.notesCollectionId,
+      );
+
+      for (final doc in documents.documents) {
+        await _appwriteService.databases.deleteDocument(
+          databaseId: AppwriteConfig.databaseId,
+          collectionId: AppwriteConfig.notesCollectionId,
+          documentId: doc.$id,
+        );
+      }
+    } catch (e) {
+      print('Error deleting all notes: $e');
+      throw Exception('Failed to delete all notes: $e');
+    }
+  }
+
   Future<Document?> getNoteById(String id) async {
     try {
       return await _appwriteService.databases.getDocument(

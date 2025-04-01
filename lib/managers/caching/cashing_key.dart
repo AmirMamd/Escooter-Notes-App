@@ -13,4 +13,5 @@ class CachingKey extends Enum<String> {
   static const CachingKey USER_ID = CachingKey('USER_ID');
   static const CachingKey PHONE_NUMBER = CachingKey('PHONE_NUMBER');
   static const CachingKey NOTES = CachingKey('NOTES');
+  static const CachingKey CONNECTION = CachingKey('CONNECTION');
 }

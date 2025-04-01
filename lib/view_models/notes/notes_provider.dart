@@ -43,24 +43,28 @@ class NotesProvider extends ChangeNotifier {
 
     try {
       if (await _hasInternet()) {
-        final dbNotes = await _notesRepository.getNotesFromDatabase();
-        _notes = dbNotes;
+        final connectionStatus =
+            await _secureStorage.readSecureData(CachingKey.CONNECTION.value);
+
+        if (connectionStatus != "No Data Found" &&
+            connectionStatus == "false") {
+          await _notesRepository.deleteAll();
+
+          await updateNotesWithCachedOnes();
+
+          for (var note in _notes) {
+            _notesRepository.createNote(note);
+          }
+
+          await _secureStorage.writeSecureData(
+              CachingKey.CONNECTION.value, "true");
+        } else {
+          final dbNotes = await _notesRepository.getNotesFromDatabase();
+          _notes = dbNotes;
+        }
         await _saveNotesToStorage();
       } else {
-        final storedNotesJson = await _secureStorage
-            .readSecureData(CachingKey.NOTES.value + CachingKey.USER_ID.value);
-
-        if (storedNotesJson != "No Data Found" && storedNotesJson.isNotEmpty) {
-          final List<dynamic> decoded = Note.decodeNotesJson(storedNotesJson);
-          _notes = decoded.map((e) {
-            final data = Map<String, dynamic>.from(e);
-            final dataWithId = {
-              ...data,
-              'id': data['id'],
-            };
-            return Note.fromJson(dataWithId);
-          }).toList();
-        }
+        await updateNotesWithCachedOnes();
       }
     } catch (e) {
       debugPrint('Error loading notes: $e');
@@ -142,6 +146,23 @@ class NotesProvider extends ChangeNotifier {
       if (await _hasInternet()) {
         await _notesRepository.updateNote(updated);
       }
+    }
+  }
+
+  Future<void> updateNotesWithCachedOnes() async {
+    final storedNotesJson = await _secureStorage
+        .readSecureData(CachingKey.NOTES.value + CachingKey.USER_ID.value);
+
+    if (storedNotesJson != "No Data Found" && storedNotesJson.isNotEmpty) {
+      final List<dynamic> decoded = Note.decodeNotesJson(storedNotesJson);
+      _notes = decoded.map((e) {
+        final data = Map<String, dynamic>.from(e);
+        final dataWithId = {
+          ...data,
+          'id': data['id'],
+        };
+        return Note.fromJson(dataWithId);
+      }).toList();
     }
   }
 }

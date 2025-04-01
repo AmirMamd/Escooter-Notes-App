@@ -37,8 +37,8 @@ void main() async {
         create: (_) => AuthenticationProvider(authRepository, userRepository),
       ),
       ChangeNotifierProvider(
-        create: (_) => NotesProvider(
-            notesRepository, DefaultConnectivityChecker(), SecureStorage()),
+        create: (_) => NotesProvider(notesRepository,
+            DefaultConnectivityChecker(SecureStorage()), SecureStorage()),
       ),
     ],
     child: const MyApp(),
