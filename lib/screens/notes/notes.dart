@@ -112,13 +112,13 @@ class _NotesState extends State<Notes> {
               ),
             ),
       bottomNavigationBar: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.w),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.0.h),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             const Spacer(),
             Padding(
-              padding: EdgeInsets.all(8.0.sp),
+              padding: EdgeInsets.symmetric(vertical: 16.0.h),
               child: GestureDetector(
                 onTap: () {
                   NamedNavigatorImpl().push(

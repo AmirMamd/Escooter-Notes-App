@@ -70,7 +70,8 @@ class _LoginState extends State<Login> {
                   Sizes.spaceBetweenButtons.hSpacer,
                   EButton(
                       text: ETexts.createAccount,
-                      onPressed: () async => _handleSignUp(context),
+                      onPressed: () async =>
+                          _handleSignUp(context, authProvider),
                       isStroke: true),
                   (2 * Sizes.spaceBetweenSections).hSpacer,
                 ],
@@ -101,8 +102,10 @@ class _LoginState extends State<Login> {
     }
   }
 
-  void _handleSignUp(BuildContext context) async {
+  void _handleSignUp(
+      BuildContext context, AuthenticationProvider authProvider) async {
     try {
+      authProvider.errorMessage = null;
       NamedNavigatorImpl().push(Routes.SIGN_UP_SCREEN);
     } catch (e) {
       if (mounted) {

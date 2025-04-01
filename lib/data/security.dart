@@ -1,26 +1,45 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-class SecureStorage{
-  final FlutterSecureStorage storage = const FlutterSecureStorage();
+abstract class SecureStorageInterface {
+  Future<void> writeSecureData(String key, String value);
 
-  writeSecureData(String key, String value) async{
-    await storage.write(key: key, value: value);
+  Future<String> readSecureData(String key);
+
+  Future<void> deleteAll();
+
+  Future<void> deleteSecureData(String key);
+}
+
+class SecureStorage implements SecureStorageInterface {
+  static final SecureStorage _instance = SecureStorage._internal();
+
+  factory SecureStorage() => _instance;
+
+  SecureStorage._internal();
+
+  final _storage = const FlutterSecureStorage();
+
+  @override
+  Future<void> writeSecureData(String key, String value) async {
+    await _storage.write(key: key, value: value);
   }
 
-  deleteAll() async{
-    await storage.deleteAll();
-  }
-
-  Future<String> readSecureData(String key) async{
-    try{
-      String value = await storage.read(key: key) ?? "No Data Found";
-      return value;
-    }catch(e){
+  @override
+  Future<String> readSecureData(String key) async {
+    try {
+      return await _storage.read(key: key) ?? 'No Data Found';
+    } catch (e) {
       return e.toString();
     }
   }
 
-  deleteSecureData(String key) async{
-    await storage.delete(key: key);
+  @override
+  Future<void> deleteAll() async {
+    await _storage.deleteAll();
+  }
+
+  @override
+  Future<void> deleteSecureData(String key) async {
+    await _storage.delete(key: key);
   }
 }

@@ -4,7 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iconsax/iconsax.dart';
 
 import '../../../utils/constants/sizes.dart';
-import '../../../utils/helpers/helpers.dart';
 
 class ETextFormField extends StatelessWidget {
   final TextEditingController controller;
@@ -44,91 +43,89 @@ class ETextFormField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isTablet = Helpers.isTablet(context);
-    final size = isTablet ? 0.5.sp : 1;
-    return TextFormField(
-      style:
-          TextStyle(color: AppColors.white, fontSize: Sizes.md, fontFamily: ''),
-      controller: controller,
-      keyboardType: keyboardType,
-      obscureText: obscureText ?? false,
-      maxLength: maxLength,
-      maxLines: maxLines,
-      autofocus: autofocus,
-      textInputAction: textInputAction,
-      cursorColor: AppColors.white,
-      decoration: InputDecoration(
-        suffixIcon: onToggleObscureText != null
-            ? Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8.0.w),
-                child: Transform.scale(
-                  scale: size.toDouble() * 0.65,
-                  child: IconButton(
-                    icon: Icon(
-                      obscureText! ? Iconsax.eye_slash : Iconsax.eye,
-                      color: AppColors.grey,
-                    ),
-                    onPressed: onToggleObscureText,
-                  ),
-                ),
-              )
-            : suffixIcon != null
-                ? Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8.0.w),
-                    child: Transform.scale(
-                      scale: size.toDouble() * 0.65,
-                      child: suffixIcon,
-                    ),
-                  )
-                : null,
-        labelText: labelText,
-        hintText: hintText,
-        prefixIcon: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 8.0.w),
-          child: Transform.scale(scale: size.toDouble(), child: prefixIcon),
+    return Theme(
+      data: Theme.of(context).copyWith(
+        textSelectionTheme: const TextSelectionThemeData(
+          selectionColor: Colors.grey,
+          cursorColor: AppColors.white,
+          selectionHandleColor: Colors.grey,
         ),
-        labelStyle: TextStyle(
+      ),
+      child: TextFormField(
+        style: TextStyle(
           color: AppColors.white,
           fontSize: Sizes.md,
+          fontFamily: '',
         ),
-        floatingLabelStyle:
-            TextStyle(color: AppColors.white, fontSize: Sizes.md),
-        contentPadding:
-            EdgeInsets.symmetric(vertical: 15.0.h, horizontal: 10.w),
-        errorStyle: TextStyle(
-          fontSize: 12.sp,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8.r),
-          borderSide: const BorderSide(
+        controller: controller,
+        keyboardType: keyboardType,
+        obscureText: obscureText ?? false,
+        maxLength: maxLength,
+        maxLines: maxLines,
+        autofocus: autofocus,
+        textInputAction: textInputAction,
+        decoration: InputDecoration(
+          suffixIcon: onToggleObscureText != null
+              ? Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8.0.w),
+                  child: Transform.scale(
+                    scale: 0.65,
+                    child: IconButton(
+                      icon: Icon(
+                        obscureText! ? Iconsax.eye_slash : Iconsax.eye,
+                        color: AppColors.grey,
+                      ),
+                      onPressed: onToggleObscureText,
+                    ),
+                  ),
+                )
+              : suffixIcon != null
+                  ? Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8.0.w),
+                      child: Transform.scale(
+                        scale: 0.65,
+                        child: suffixIcon,
+                      ),
+                    )
+                  : null,
+          labelText: labelText,
+          hintText: hintText,
+          prefixIcon: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8.0.w),
+            child: Transform.scale(scale: 1, child: prefixIcon),
+          ),
+          labelStyle: TextStyle(
             color: AppColors.white,
-            width: 1,
+            fontSize: Sizes.md,
           ),
-        ),
-        enabledBorder: OutlineInputBorder(
-          // Add this for unfocused state
-          borderRadius: BorderRadius.circular(8.r),
-          borderSide: const BorderSide(
-            color: AppColors.white, // White border when unfocused
-            width: 1,
+          floatingLabelStyle:
+              TextStyle(color: AppColors.white, fontSize: Sizes.md),
+          contentPadding:
+              EdgeInsets.symmetric(vertical: 15.0.h, horizontal: 10.w),
+          errorStyle: TextStyle(fontSize: 12.sp),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.r),
+            borderSide: const BorderSide(color: AppColors.white, width: 1),
           ),
-        ),
-        border: borderStyle ??
-            OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8.r),
-              borderSide: const BorderSide(
-                color: Colors.grey,
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.r),
+            borderSide: const BorderSide(color: AppColors.white, width: 1),
+          ),
+          border: borderStyle ??
+              OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8.r),
+                borderSide: const BorderSide(color: Colors.grey),
               ),
-            ),
+        ),
+        validator: validator ??
+            (value) {
+              if (value == null || value.isEmpty) {
+                return 'This field cannot be empty';
+              }
+              return null;
+            },
+        onChanged: onChanged,
       ),
-      validator: validator ??
-          (value) {
-            if (value == null || value.isEmpty) {
-              return 'This field cannot be empty';
-            }
-            return null;
-          },
-      onChanged: onChanged,
     );
   }
 }

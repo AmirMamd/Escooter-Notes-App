@@ -5,15 +5,19 @@ import 'package:escooter_notes_app/managers/caching/cashing_key.dart';
 import 'package:escooter_notes_app/managers/navigator/named_navigator.dart';
 import 'package:escooter_notes_app/managers/navigator/named_navigator_implementation.dart';
 import 'package:escooter_notes_app/services/email_service.dart';
+import 'package:escooter_notes_app/services/user_service.dart';
 
 import '../services/app_write_service.dart';
 import '../utils/config/config.dart';
 
 class AuthenticationRepository {
   final AppwriteService _appwriteService;
+  final UserService _userService;
   final EmailService _emailService;
+  final SecureStorageInterface _secureStorage;
 
-  AuthenticationRepository(this._appwriteService, this._emailService);
+  AuthenticationRepository(this._appwriteService, this._emailService,
+      this._secureStorage, this._userService);
 
   Future<void> login(String email, String password) async {
     try {
@@ -26,13 +30,11 @@ class AuthenticationRepository {
     }
 
     try {
-      // 2. Create a new session
       await _appwriteService.account.createEmailPasswordSession(
         email: email,
         password: password,
       );
 
-      // 3. Fetch user info
       final user = await _appwriteService.account.get();
 
       if (user.emailVerification) {
@@ -89,16 +91,13 @@ class AuthenticationRepository {
 
   Future<bool> isLoggedIn() async {
     try {
-      // 1. Get current session
       final session =
           await _appwriteService.account.getSession(sessionId: 'current');
       if (session.provider != 'email') return false;
 
-      // 2. Get the current user to extract their email
       final user = await _appwriteService.account.get();
       final email = user.email;
 
-      // 3. Query the users collection to find user by email
       final userDocs = await _appwriteService.databases.listDocuments(
         databaseId: AppwriteConfig.databaseId,
         collectionId: AppwriteConfig.usersCollectionId,
@@ -107,22 +106,13 @@ class AuthenticationRepository {
         ],
       );
 
-      // 4. If no document found, return false
       if (userDocs.documents.isEmpty) return false;
 
       final userDoc = userDocs.documents.first;
 
-      await SecureStorage().writeSecureData(
-          CachingKey.FIRST_NAME.value, user.name.split(' ').first);
-      await SecureStorage().writeSecureData(
-          CachingKey.LAST_NAME.value, user.name.split(' ').last);
-      await SecureStorage().writeSecureData(CachingKey.EMAIL.value, user.email);
-      await SecureStorage()
-          .writeSecureData(CachingKey.PHONE_NUMBER.value, user.phone);
-      await SecureStorage().writeSecureData(CachingKey.USER_ID.value, user.$id);
+      _userService.cacheUserInfo(user);
       NamedNavigatorImpl().push(Routes.NOTES_SCREEN, clean: true);
 
-      // 5. Check the 'status' field (or 'enabled' field if named that)
       final isEnabled = userDoc.data['status'] == true;
 
       return isEnabled;
@@ -133,7 +123,7 @@ class AuthenticationRepository {
 
   Future<void> sendVerificationEmail(String email) async {
     _emailService.init();
-    await SecureStorage().writeSecureData(CachingKey.EMAIL.value, email);
+    await _secureStorage.writeSecureData(CachingKey.EMAIL.value, email);
     bool otpSent = await _emailService.sendOtp(email);
     if (otpSent) {
       NamedNavigatorImpl().push(Routes.VERIFICATION_SCREEN);
@@ -147,18 +137,15 @@ class AuthenticationRepository {
 
     if (!isVerified) throw Exception("Wrong or expired code");
 
-    // Get current user
     final user = await _appwriteService.account.get();
-    // Create JWT (store session)
+
     final token = await _appwriteService.account.createJWT();
     await _appwriteService.storeSession(token);
 
-    // Create user document in the 'users' collection
     await _appwriteService.databases.createDocument(
       databaseId: AppwriteConfig.databaseId,
       collectionId: AppwriteConfig.usersCollectionId,
       documentId: user.$id,
-      // use same ID for consistency
       data: {
         "first_name": user.name.split(' ').first,
         "last_name": user.name.split(' ').last,
@@ -177,21 +164,12 @@ class AuthenticationRepository {
     );
     _appwriteService.account
         .updateVerification(userId: user.$id, secret: token.jwt);
-    // Navigate to home
-
-    await SecureStorage().writeSecureData(
-        CachingKey.FIRST_NAME.value, user.name.split(' ').first);
-    await SecureStorage()
-        .writeSecureData(CachingKey.LAST_NAME.value, user.name.split(' ').last);
-    await SecureStorage().writeSecureData(CachingKey.EMAIL.value, user.email);
-    await SecureStorage()
-        .writeSecureData(CachingKey.PHONE_NUMBER.value, user.phone);
-    await SecureStorage().writeSecureData(CachingKey.USER_ID.value, user.$id);
+    _userService.cacheUserInfo(user);
     NamedNavigatorImpl().push(Routes.NOTES_SCREEN, clean: true);
   }
 
   Future<bool> resendOtp() async {
-    final email = await SecureStorage().readSecureData(CachingKey.EMAIL.value);
+    final email = await _secureStorage.readSecureData(CachingKey.EMAIL.value);
     final isOtpSent = await _emailService.sendOtp(email);
     if (isOtpSent) {
       return true;

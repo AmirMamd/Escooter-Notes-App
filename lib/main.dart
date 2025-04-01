@@ -1,10 +1,13 @@
+import 'package:escooter_notes_app/data/security.dart';
 import 'package:escooter_notes_app/managers/navigator/named_navigator_implementation.dart';
 import 'package:escooter_notes_app/repositories/authentication_repository.dart';
 import 'package:escooter_notes_app/repositories/notes_repository.dart';
 import 'package:escooter_notes_app/repositories/user_repository.dart';
 import 'package:escooter_notes_app/services/app_write_service.dart';
 import 'package:escooter_notes_app/services/email_service.dart';
+import 'package:escooter_notes_app/services/user_service.dart';
 import 'package:escooter_notes_app/utils/config/config.dart';
+import 'package:escooter_notes_app/utils/connectivity/connectivity.dart';
 import 'package:escooter_notes_app/utils/helpers/helpers.dart';
 import 'package:escooter_notes_app/utils/theme/app_theme.dart';
 import 'package:escooter_notes_app/view_models/authentication/authentication_provider.dart';
@@ -19,8 +22,9 @@ void main() async {
   await AppwriteConfig.load();
   final appwriteService = AppwriteService();
   final emailService = EmailService();
-  final authRepository =
-      AuthenticationRepository(appwriteService, emailService);
+  final userService = UserService();
+  final authRepository = AuthenticationRepository(
+      appwriteService, emailService, SecureStorage(), userService);
   final userRepository = UserRepository(appwriteService);
   final notesRepository = NotesRepository(appwriteService);
 
@@ -33,7 +37,8 @@ void main() async {
         create: (_) => AuthenticationProvider(authRepository, userRepository),
       ),
       ChangeNotifierProvider(
-        create: (_) => NotesProvider(notesRepository),
+        create: (_) => NotesProvider(
+            notesRepository, DefaultConnectivityChecker(), SecureStorage()),
       ),
     ],
     child: const MyApp(),
