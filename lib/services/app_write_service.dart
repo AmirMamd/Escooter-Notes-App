@@ -1,7 +1,7 @@
 import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart';
-import 'package:escooter_notes_app/data/security.dart';
 import 'package:escooter_notes_app/managers/caching/cashing_key.dart';
+import 'package:escooter_notes_app/managers/caching/security.dart';
 
 import '../utils/config/config.dart';
 

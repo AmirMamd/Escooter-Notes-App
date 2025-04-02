@@ -1,5 +1,5 @@
 import 'package:appwrite/models.dart';
-import 'package:escooter_notes_app/data/security.dart';
+import 'package:escooter_notes_app/managers/caching/security.dart';
 import 'package:escooter_notes_app/managers/navigator/named_navigator.dart';
 import 'package:escooter_notes_app/managers/navigator/named_navigator_implementation.dart';
 import 'package:escooter_notes_app/repositories/authentication_repository.dart';
@@ -143,7 +143,12 @@ class AuthenticationProvider with ChangeNotifier {
 
   Future<void> verifyOtp(String otp) async {
     try {
-      await _authRepository.verifyOtp(otp);
+      bool isVerified = await _authRepository.verifyOtp(otp);
+      if (isVerified) {
+        NamedNavigatorImpl().push(Routes.NOTES_SCREEN, clean: true);
+      } else {
+        errorMessage = "Invalid Code..Please try again";
+      }
     } catch (e) {
       errorMessage = "Invalid Code..Please try again";
     }

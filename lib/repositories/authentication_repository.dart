@@ -1,7 +1,7 @@
 import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart';
-import 'package:escooter_notes_app/data/security.dart';
 import 'package:escooter_notes_app/managers/caching/cashing_key.dart';
+import 'package:escooter_notes_app/managers/caching/security.dart';
 import 'package:escooter_notes_app/managers/navigator/named_navigator.dart';
 import 'package:escooter_notes_app/managers/navigator/named_navigator_implementation.dart';
 import 'package:escooter_notes_app/services/email_service.dart';
@@ -132,40 +132,44 @@ class AuthenticationRepository {
     }
   }
 
-  Future<void> verifyOtp(String otp) async {
-    final isVerified = await _emailService.verifyOtp(otp);
+  Future<bool> verifyOtp(String otp) async {
+    try {
+      final isVerified = await _emailService.verifyOtp(otp);
 
-    if (!isVerified) throw Exception("Wrong or expired code");
+      if (!isVerified) throw Exception("Wrong or expired code");
 
-    final user = await _appwriteService.account.get();
+      final user = await _appwriteService.account.get();
 
-    final token = await _appwriteService.account.createJWT();
-    await _appwriteService.storeSession(token);
+      final token = await _appwriteService.account.createJWT();
+      await _appwriteService.storeSession(token);
 
-    await _appwriteService.databases.createDocument(
-      databaseId: AppwriteConfig.databaseId,
-      collectionId: AppwriteConfig.usersCollectionId,
-      documentId: user.$id,
-      data: {
-        "first_name": user.name.split(' ').first,
-        "last_name": user.name.split(' ').last,
-        "email": user.email,
-        "email_verification_status": true,
-        "status": true,
-        "phone": user.phone,
-        "created_at": DateTime.now().toIso8601String(),
-        "updated_at": DateTime.now().toIso8601String(),
-      },
-      permissions: [
-        Permission.read(Role.user(user.$id)),
-        Permission.update(Role.user(user.$id)),
-        Permission.delete(Role.user(user.$id)),
-      ],
-    );
-    _appwriteService.account
-        .updateVerification(userId: user.$id, secret: token.jwt);
-    _userService.cacheUserInfo(user);
-    NamedNavigatorImpl().push(Routes.NOTES_SCREEN, clean: true);
+      await _appwriteService.databases.createDocument(
+        databaseId: AppwriteConfig.databaseId,
+        collectionId: AppwriteConfig.usersCollectionId,
+        documentId: user.$id,
+        data: {
+          "first_name": user.name.split(' ').first,
+          "last_name": user.name.split(' ').last,
+          "email": user.email,
+          "email_verification_status": true,
+          "status": true,
+          "phone": user.phone,
+          "created_at": DateTime.now().toIso8601String(),
+          "updated_at": DateTime.now().toIso8601String(),
+        },
+        permissions: [
+          Permission.read(Role.user(user.$id)),
+          Permission.update(Role.user(user.$id)),
+          Permission.delete(Role.user(user.$id)),
+        ],
+      );
+      _appwriteService.account
+          .updateVerification(userId: user.$id, secret: token.jwt);
+      _userService.cacheUserInfo(user);
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   Future<bool> resendOtp() async {

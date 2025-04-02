@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'package:escooter_notes_app/repositories/notes_repository.dart';
 import 'package:flutter/material.dart';
 
-import '../../data/security.dart';
 import '../../managers/caching/cashing_key.dart';
+import '../../managers/caching/security.dart';
 import '../../models/notes_model.dart';
 import '../../utils/connectivity/connectivity.dart';
 import '../../utils/helpers/helpers.dart';

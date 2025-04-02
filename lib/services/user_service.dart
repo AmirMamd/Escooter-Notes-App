@@ -1,6 +1,6 @@
 import 'package:appwrite/models.dart';
-import 'package:escooter_notes_app/data/security.dart';
 import 'package:escooter_notes_app/managers/caching/cashing_key.dart';
+import 'package:escooter_notes_app/managers/caching/security.dart';
 
 class UserService {
   static final SecureStorageInterface _secureStorage = SecureStorage();

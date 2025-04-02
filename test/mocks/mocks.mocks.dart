@@ -6,7 +6,7 @@
 import 'dart:async' as _i4;
 
 import 'package:appwrite/models.dart' as _i2;
-import 'package:escooter_notes_app/data/security.dart' as _i9;
+import 'package:escooter_notes_app/managers/caching/security.dart' as _i9;
 import 'package:escooter_notes_app/models/notes_model.dart' as _i7;
 import 'package:escooter_notes_app/repositories/authentication_repository.dart'
     as _i3;
@@ -118,13 +118,12 @@ class MockAuthenticationRepository extends _i1.Mock
           as _i4.Future<void>);
 
   @override
-  _i4.Future<void> verifyOtp(String? otp) =>
+  _i4.Future<bool> verifyOtp(String? otp) =>
       (super.noSuchMethod(
             Invocation.method(#verifyOtp, [otp]),
-            returnValue: _i4.Future<void>.value(),
-            returnValueForMissingStub: _i4.Future<void>.value(),
+            returnValue: _i4.Future<bool>.value(false),
           )
-          as _i4.Future<void>);
+          as _i4.Future<bool>);
 
   @override
   _i4.Future<bool> resendOtp() =>
@@ -237,6 +236,15 @@ class MockNotesRepository extends _i1.Mock implements _i6.NotesRepository {
           as _i4.Future<void>);
 
   @override
+  _i4.Future<void> deleteAll() =>
+      (super.noSuchMethod(
+            Invocation.method(#deleteAll, []),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
   _i4.Future<_i2.Document?> getNoteById(String? id) =>
       (super.noSuchMethod(
             Invocation.method(#getNoteById, [id]),
@@ -298,6 +306,15 @@ class MockSecureStorageInterface extends _i1.Mock
   _i4.Future<void> deleteAll() =>
       (super.noSuchMethod(
             Invocation.method(#deleteAll, []),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> deleteSecureData(String? key) =>
+      (super.noSuchMethod(
+            Invocation.method(#deleteSecureData, [key]),
             returnValue: _i4.Future<void>.value(),
             returnValueForMissingStub: _i4.Future<void>.value(),
           )

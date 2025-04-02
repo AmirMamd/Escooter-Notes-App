@@ -1,4 +1,4 @@
-import 'package:escooter_notes_app/data/security.dart';
+import 'package:escooter_notes_app/managers/caching/security.dart';
 import 'package:escooter_notes_app/managers/navigator/named_navigator_implementation.dart';
 import 'package:escooter_notes_app/repositories/authentication_repository.dart';
 import 'package:escooter_notes_app/repositories/notes_repository.dart';
